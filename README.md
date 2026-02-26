@@ -1,15 +1,17 @@
 # Open Claw Engine
 
-**Open Claw Engine** is a WordPress plugin that lets an external AI agent generate and publish **daily, SEO‑optimized long‑form posts** with images, internal/external links, schema markup, and quality guardrails.
+**Open Claw Engine** is a WordPress plugin that lets an external AI agent generate and publish **daily, SEO‐optimized long‐form posts** with images, internal/external links, schema markup, and quality guardrails.
 
 **Attribution:** Designed by **Host Hobbit Ltd**. Author: **Mike Warburton**. [https://hosthobbit.com](https://hosthobbit.com)
 
 It supports two modes:
 
 - **Mode A (recommended)**: External agent calls the plugin's REST API (Application Passwords / JWT / HMAC).
-- **Mode B**: Plugin delegates generation to an OpenAI‑compatible endpoint via hooks/filters.
+- **Mode B**: Plugin delegates generation to an OpenAI‐compatible endpoint via hooks/filters.
 
-The plugin focuses on **discoverability, on‑page SEO, safety, and editorial control** (no virality promises).
+The plugin focuses on **discoverability, on‐page SEO, safety, and editorial control** (no virality promises).
+
+**TODO:** We need to fix the image generation — it is not currently making images for the posts. Apart from that, it's all good.
 
 ---
 
@@ -73,7 +75,7 @@ Optional:
 
 2. **Choose how content is generated**
    - **Mode A (External agent)** – An external service (e.g. your own API or automation) will call the plugin's REST API to trigger generation. You'll configure **Auth mode** (Application Password, JWT, or HMAC) so that service can authenticate.
-   - **Mode B (Direct LLM)** – The plugin will call an OpenAI‑compatible API itself. Enable **Use built-in OpenAI-compatible provider** and fill in **API Base URL**, **API Key**, and **Model** (use the dropdown or type a model ID). Optionally click **Refresh models** after saving to load models from your API.
+   - **Mode B (Direct LLM)** – The plugin will call an OpenAI‐compatible API itself. Enable **Use built-in OpenAI-compatible provider** and fill in **API Base URL**, **API Key**, and **Model** (use the dropdown or type a model ID). Optionally click **Refresh models** after saving to load models from your API.
 
 3. **Set connection and auth (Mode A)**
    - **Auth Mode**: Choose **Application Password** (recommended), **JWT**, or **HMAC**.
@@ -143,7 +145,7 @@ You can set:
 
 - Target **categories** and **tags**.
 - **Tone** (professional, conversational, technical) and **voice** (1st/2nd/3rd person).
-- Long‑form **word count range** (e.g., 1200–2500 words).
+- Long‐form **word count range** (e.g., 1200–2500 words).
 - Daily scheduling time and cadence (daily/weekday/custom via cron).
 
 ### SEO & Quality
@@ -157,11 +159,11 @@ You can set:
 - **Image rules**:
   - Featured image required.
   - Inline image count.
-  - Alt‑text generation required.
+  - Alt‐text generation required.
 - **Quality thresholds**:
   - Readability minimum.
   - SEO score minimum.
-  - Draft‑only mode vs auto‑publish when thresholds are met.
+  - Draft‐only mode vs auto‐publish when thresholds are met.
 
 See `docs/ARCHITECTURE.md` and `docs/API.md` for deeper details.
 
@@ -169,18 +171,18 @@ See `docs/ARCHITECTURE.md` and `docs/API.md` for deeper details.
 
 ## How It Works (High Level)
 
-1. **Campaign configuration** – you configure a daily subject (e.g. "Managed WordPress security tips") and defaults in the admin UI.
-2. **Scheduling** – WP‑Cron triggers a daily event at your configured time.
+1. **Campaign configuration** – you configure a daily subject (e.g. “Managed WordPress security tips”) and defaults in the admin UI.
+2. **Scheduling** – WP‐Cron triggers a daily event at your configured time.
 3. **Generation** – for each scheduled run or API call:
    - The plugin asks a **generation agent** (external service or LLM API) via the `jarvis_content_engine_generate` filter to provide:
      - Title options / chosen title.
-     - Outline and long‑form article body with H2/H3.
+     - Outline and long‐form article body with H2/H3.
      - FAQ section and CTA block.
-     - Suggested internal/external links, meta, OG fields, and schema JSON‑LD.
+     - Suggested internal/external links, meta, OG fields, and schema JSON‐LD.
    - The plugin stores the content as a **draft or published post** based on your workflow and thresholds.
 4. **Scoring & Guardrails** – Open Claw Engine computes a simple SEO/quality score and enforces thresholds (readability, link distribution, content length).
 5. **Images** – image URLs from the generator are downloaded into the **Media Library**, with alt text set from context, and assigned as featured / inline images as configured.
-6. **SEO integration** – meta title/description and focus keyword are saved in Rank Math / Yoast fields when available, plus plugin‑specific fallbacks.
+6. **SEO integration** – meta title/description and focus keyword are saved in Rank Math / Yoast fields when available, plus plugin‐specific fallbacks.
 7. **Logs & Health** – job records and scores are stored in a custom table and surfaced in the admin **Job Logs** view. A `/health` endpoint is available for external monitoring.
 
 ---
@@ -195,11 +197,11 @@ Core endpoints:
 - `GET /jobs/{id}` – get job status and details.
 - `POST /jobs/{id}/run` – force run/generate a job.
 - `POST /jobs/{id}/approve` – publish associated draft post (for editorial workflows).
-- `POST /generate` – one‑shot generate + draft.
-- `POST /publish` – one‑shot generate + publish (requires `publish_posts` capability).
+- `POST /generate` – one‐shot generate + draft.
+- `POST /publish` – one‐shot generate + publish (requires `publish_posts` capability).
 - `GET /health` – plugin health and config summary.
 
-Authentication is via standard **WordPress REST** auth (cookies for logged‑in admins) plus:
+Authentication is via standard **WordPress REST** auth (cookies for logged‐in admins) plus:
 
 - **Application Passwords** (recommended for external agents).
 - **JWT** (if you have a JWT plugin configured).
@@ -231,11 +233,11 @@ Open Claw Engine handles:
 
 ## Direct LLM Integration (Mode B)
 
-In Mode B, the plugin expects a site‑specific implementation of the filter:
+In Mode B, the plugin expects a site‐specific implementation of the filter:
 
 ```php
 add_filter( 'jarvis_content_engine_generate', function( $generation, $context ) {
-    // Call your OpenAI‑compatible API here using $context.
+    // Call your OpenAI‐compatible API here using $context.
     // Return an array with at least: title, content, excerpt, internal_links, external_links.
     return array(
         'title'            => '...',
@@ -253,12 +255,12 @@ add_filter( 'jarvis_content_engine_generate', function( $generation, $context ) 
         'faq'              => array(
             array( 'q' => 'Question?', 'a' => 'Answer...' ),
         ),
-        'cta'              => '<p>Call‑to‑action...</p>',
+        'cta'              => '<p>Call‐to‐action...</p>',
     );
 }, 10, 2 );
 ```
 
-This lets you keep all LLM calling code (and secrets) in a **custom mu‑plugin or theme**, while Open Claw Engine handles only WordPress‑side responsibilities.
+This lets you keep all LLM calling code (and secrets) in a **custom mu‐plugin or theme**, while Open Claw Engine handles only WordPress‐side responsibilities.
 
 ---
 
@@ -280,7 +282,7 @@ phpunit --testsuite jarvis-content-engine
 - All admin actions require **`manage_options`**.
 - REST routes enforce capabilities (`edit_posts`, `publish_posts`) plus optional HMAC/JWT.
 - Inputs are sanitized and escaped following WordPress coding standards.
-- No secrets are hard‑coded in the plugin; you provide API keys/secrets via settings or environment‑specific code.
+- No secrets are hard‐coded in the plugin; you provide API keys/secrets via settings or environment‐specific code.
 
 See `docs/SECURITY.md` for a deeper security review and threat model.
 
@@ -296,4 +298,4 @@ See `docs/SECURITY.md` for a deeper security review and threat model.
 
 ## License
 
-GPL‑2.0‑or‑later.
+GPL‐2.0‐or‐later.
