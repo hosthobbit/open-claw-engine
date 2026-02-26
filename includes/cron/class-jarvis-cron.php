@@ -119,3 +119,4 @@ class Jarvis_Cron {
 		wp_schedule_single_event( $timestamp, self::HOOK_RETRY, array() );
 	}
 }
+

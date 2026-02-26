@@ -115,3 +115,4 @@ class Jarvis_Plugin {
 		}
 	}
 }
+
