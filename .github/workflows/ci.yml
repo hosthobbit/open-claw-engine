@@ -1,0 +1,58 @@
+# Open Claw Engine – CI
+# Runs on push and pull_request to main/master. Connects this repo to GitHub Actions.
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  php-syntax:
+    name: PHP syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: none
+
+      - name: Check PHP syntax
+        run: |
+          for f in $(find . -name '*.php' -not -path './vendor/*'); do
+            php -l "$f" || exit 1
+          done
+
+  php-lint:
+    name: PHP lint (WordPress-style)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+
+      - name: Install PHP_CodeSniffer and WordPress-Coding-Standards
+        run: |
+          composer require --dev squizlabs/php_codesniffer wp-coding-standards/wpcs --no-interaction --prefer-dist 2>/dev/null || true
+          if [ -f vendor/bin/phpcs ]; then
+            vendor/bin/phpcs -i
+          else
+            echo "PHPCS not available; skipping lint."
+          fi
+        continue-on-error: true
+
+      - name: Run phpcs (optional)
+        run: |
+          if [ -f vendor/bin/phpcs ]; then
+            vendor/bin/phpcs --standard=WordPress --extensions=php --ignore=vendor,node_modules .
+          else
+            echo "Skipped."
+          fi
+        continue-on-error: true
