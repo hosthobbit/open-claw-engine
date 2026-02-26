@@ -28,13 +28,97 @@ Optional:
 
 ## Installation
 
+### Install via ZIP (recommended)
+
+1. **Download the plugin**
+   - Go to [https://github.com/hosthobbit/open-claw-engine](https://github.com/hosthobbit/open-claw-engine).
+   - Click **Code** → **Download ZIP** (or clone and then zip the folder).
+
+2. **Prepare the ZIP file**
+   - Unzip the downloaded file on your computer.
+   - The folder inside must be named **`jarvis-content-engine`** (this is the plugin slug WordPress expects).
+   - If GitHub gave you a folder named `open-claw-engine-main`, rename it to **`jarvis-content-engine`**.
+   - Zip that single folder again so the archive contains **one** folder: `jarvis-content-engine`, with all plugin files (e.g. `jarvis-content-engine.php`, `README.md`, `includes/`, etc.) inside it.
+
+3. **Install in WordPress**
+   - Log in to **wp-admin**.
+   - Go to **Plugins** → **Add New**.
+   - Click **Upload Plugin**, choose your **jarvis-content-engine.zip** file, then **Install Now**.
+   - After installation, click **Activate Plugin**.
+
+4. **Optional: manual copy**
+   - Alternatively, copy the `jarvis-content-engine` folder into your site's `wp-content/plugins` directory, then activate **Open Claw Engine** under **Plugins**.
+
+5. **Post-install**
+   - Go to **Open Claw Engine** in the admin menu to configure integration mode, auth, and content defaults.
+   - If you want the plugin to remove its data when uninstalled, enable **Cleanup on uninstall** in settings.
+
+### Alternative: manual copy
+
 1. Copy the `jarvis-content-engine` folder into your WordPress `wp-content/plugins` directory.
 2. In `wp-admin` → **Plugins**, activate **Open Claw Engine**.
 3. Go to **Open Claw Engine** in the admin menu to configure:
    - **Integration mode** (external agent vs direct LLM fallback).
    - **Auth mode** (Application Password / JWT / HMAC).
-   - Content defaults, SEO defaults, link/image rules, and quality thresholds.
-4. (Optional) If you want uninstall to fully clean up, enable **"Cleanup on uninstall"**.
+   - Content defaults, SEO defaults, link/image rules, and quality thresholds. Optionally enable **Cleanup on uninstall** in the main Settings tab if you want data removed when the plugin is uninstalled.
+
+---
+
+## How to use
+
+### First-time setup
+
+1. **Open the settings page**
+   In the WordPress admin sidebar, click **Open Claw Engine**. You'll see two tabs: **Settings** and **Job Logs**.
+
+2. **Choose how content is generated**
+   - **Mode A (External agent)** – An external service (e.g. your own API or automation) will call the plugin's REST API to trigger generation. You'll configure **Auth mode** (Application Password, JWT, or HMAC) so that service can authenticate.
+   - **Mode B (Direct LLM)** – The plugin will call an OpenAI‑compatible API itself. Enable **Use built-in OpenAI-compatible provider** and fill in **API Base URL**, **API Key**, and **Model** (use the dropdown or type a model ID). Optionally click **Refresh models** after saving to load models from your API.
+
+3. **Set connection and auth (Mode A)**
+   - **Auth Mode**: Choose **Application Password** (recommended), **JWT**, or **HMAC**.
+   - For Application Passwords: create a WordPress user for the agent, then **Users** → edit that user → **Application Passwords** → create a new password and use it (with the username) in your external client.
+   - For HMAC: set a **HMAC Shared Secret** in the plugin; your client must sign requests with that secret (see `docs/API.md`).
+
+4. **Set content and SEO defaults**
+   - **Content defaults**: Default subject, target categories/tags, tone, voice, word count range, publish cadence (daily/weekdays), and daily time.
+   - **SEO**: Meta title template, slug strategy, primary/secondary keywords.
+   - **Links**: Min/max internal and external links; optional allowlist/blocklist for external URLs.
+   - **Images**: Featured image required, inline image count, alt text, Use featured as OG fallback, Verify remote image exists (recommended).
+   - **Quality**: Readability and SEO score minimums; **Draft only** (recommended) so posts are created as drafts for review, or **Auto publish** when thresholds are met.
+
+5. **Save** the settings.
+
+### Creating and running jobs
+
+- **Via REST API (Mode A)**
+  Your external agent calls:
+  - `POST /wp-json/jarvis/v1/jobs` – create a scheduled job (subject, keywords, etc.).
+  - `POST /wp-json/jarvis/v1/jobs/{id}/run` – run that job immediately.
+  - `POST /wp-json/jarvis/v1/generate` – one-shot generate and save as draft.
+  - `POST /wp-json/jarvis/v1/publish` – one-shot generate and publish (if allowed).
+
+  Use the **Job Logs** tab to see status, scores, and any errors.
+
+- **Via WordPress (scheduled)**
+  If you use **Publish cadence** (e.g. daily at 03:00), WP-Cron will run the configured job automatically. Check **Job Logs** after the run.
+
+### Editorial workflow
+
+1. **Draft-only (recommended)**
+   With **Draft only** enabled, every generated post is saved as a **draft**. You review it in **Posts**, edit if needed, then click **Publish** when ready.
+
+2. **Approve via API**
+   For jobs created via the API, you can publish the associated draft by calling `POST /wp-json/jarvis/v1/jobs/{id}/approve` (or publish the post manually in wp-admin).
+
+3. **Job Logs**
+   Use the **Job Logs** tab to see each run: status, SEO/readability scores, image and link results, and error messages. Fix any misconfiguration (e.g. API key, model, or image URLs) and re-run if needed.
+
+### Health and monitoring
+
+- **GET /wp-json/jarvis/v1/health** – Returns plugin status and a short config summary (no secrets). Use this from monitoring or uptime checks.
+
+For full request/response formats and examples, see **`docs/API.md`**.
 
 ---
 
@@ -42,11 +126,11 @@ Optional:
 
 ### Connection & Auth
 
-- **Integration Mode**  
+- **Integration Mode**
   - `external` – external agent calls REST endpoints (recommended).
   - `direct` – plugin expects a filter implementation (Mode B) to call an LLM API.
 
-- **Auth Mode**  
+- **Auth Mode**
   - `Application Password` – best default; use a dedicated service user.
   - `JWT` – uses your existing JWT plugin for authentication.
   - `HMAC` – Open Claw Engine expects signed requests using an HMAC shared secret.
@@ -204,13 +288,12 @@ See `docs/SECURITY.md` for a deeper security review and threat model.
 
 ## Attribution
 
-- **Designed by:** Host Hobbit Ltd  
-- **Author:** Mike Warburton  
-- **URL:** https://hosthobbit.com  
+- **Designed by:** Host Hobbit Ltd
+- **Author:** Mike Warburton
+- **URL:** https://hosthobbit.com
 
 ---
 
 ## License
 
 GPL‑2.0‑or‑later.
-
