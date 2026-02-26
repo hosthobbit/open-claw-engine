@@ -1,0 +1,24 @@
+# IDE and OS
+.idea/
+.vscode/
+*.sublime-*
+.DS_Store
+Thumbs.db
+
+# Composer (if added later)
+/vendor/
+
+# Node (if added later)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Logs and temp
+*.log
+*.tmp
+.cache/
+
+# Local env
+.env
+.env.local
+.env.*.local
