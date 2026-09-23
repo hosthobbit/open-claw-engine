@@ -6,10 +6,6 @@
 
 ---
 
-> **TODO:** Image generation is not yet creating images for posts. Everything else is working as expected.
-
----
-
 ## Table of contents
 
 - [Requirements](#requirements)
@@ -22,7 +18,8 @@
 - [Mode B: Direct LLM](#direct-llm-integration-mode-b)
 - [Development & testing](#development--testing)
 - [Security](#security-notes)
-- [Attribution & license](#attribution--license)
+- [Known limitations](#known-limitations)
+- [License](#license)
 
 ---
 
@@ -239,12 +236,20 @@ See **`docs/SECURITY.md`** for threat model and details.
 
 ---
 
-## Attribution & license
+## Known limitations
 
-| | |
-|---|---|
-| **Designed by** | Host Hobbit Ltd |
-| **Author** | Mike Warburton |
-| **URL** | [hosthobbit.com](https://hosthobbit.com) |
+- **Images depend on the generator supplying real image URLs.** For safety the plugin only imports direct image links from Unsplash, Pixabay or Wikimedia and checks each one before downloading it. Language models can't browse those sites, so in Mode B they rarely return links that pass these checks, and posts are created without images. An external agent (Mode A) that searches those sites can supply valid images today. Built-in Unsplash/Pixabay API lookup is planned.
 
-**License:** GPL-2.0-or-later.
+---
+
+## License
+
+GPL-2.0-or-later.
+
+---
+
+## About Host Hobbit
+
+Built and maintained by **[Host Hobbit Ltd](https://hosthobbit.com)**: managed WordPress hosting, WHM/cPanel and VPS administration, security hardening and AI automation for businesses in the UK.
+
+Need help deploying this, or want something similar built for your business? [Get in touch](https://hosthobbit.com).
